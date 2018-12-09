@@ -50,7 +50,7 @@
 			$user = $this->find($email);
 			if($user) {
 				if($this->data()->password === md5($password)) {
-					session::put($this->_sessionName, $this->data()->id);
+					Session::put($this->_sessionName, $this->data()->id);
 					return true;
 				}	
 			}

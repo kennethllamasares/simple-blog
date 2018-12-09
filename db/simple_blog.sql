@@ -79,7 +79,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `created_at`, `updated_at`) VALUES
-(1, 'Jack Sparrow', 'jacksparrow@gmail.com', 'd41d8cd98f00b204e9800998ecf8427e', NULL, NULL);
+(1, 'Jack Sparrow', 'jacksparrow@gmail.com', 'd9c3a941c9c404e06f699d90d0e8d98c', NULL, NULL);
 
 --
 -- Indexes for dumped tables

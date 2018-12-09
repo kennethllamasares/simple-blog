@@ -39,7 +39,7 @@
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-md-10 mx-auto">
-				<form method="post"  role="form" action="" novalidate>
+				<form method="post"  role="form" action="" novalidate autocomplete="off">
 
 					<?php if(Session::exists('home')) { ?>
 						<div class="alert alert-success" role="alert">
@@ -57,7 +57,7 @@
 
 				            if($validation->passed()) {
 				                $user = new User();
-				                $login = $user->login(Input::get('email'), Input::get('pass'));
+				                $login = $user->login(Input::get('email'), Input::get('password'));
 
 				                if($login) {
 				                    Redirect::to('index.php');
