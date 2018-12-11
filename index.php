@@ -5,7 +5,9 @@
 
     $page_title = 'Simple Blog - a place to read and write big ideas and important stories';
 
-    $posts = DB::getInstance()->query("SELECT posts.id, posts.title, posts.content, posts.created_at, users.name as author FROM posts LEFT JOIN users ON posts.user_id=users.id");
+    $db = new Database();
+
+    $results = $db->query("SELECT posts.id, posts.title, posts.content, posts.created_at, users.name as author FROM posts LEFT JOIN users ON posts.user_id=users.id");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -39,22 +41,22 @@
     <div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-md-10 mx-auto">
-				<?php if(!$posts->count()): ?>
+				<?php if(!$results): ?>
 					<p class="text-center">No posts available.</p>
 				<?php else: ?>
-					<?php foreach($posts->results() as $post): ?>
+					<?php foreach($results as $post): ?>
 						<div class="post-preview">
-							<a href="post.php?title=<?php echo str_slug($post->title); ?>">
+							<a href="post.php?title=<?php echo str_slug($post['title']); ?>">
 								<h2 class="post-title">
-									<?php echo $post->title; ?>
+									<?php echo $post['title']; ?>
 								</h2>
 								<h3 class="post-subtitle">
-									<?php echo substr(strip_tags($post->content), 0, 200); ?>
+									<?php echo substr(strip_tags($post['content']), 0, 200); ?>
 								</h3>
 							</a>
 							<p class="post-meta">Posted by
-								<a><?php echo $post->author; ?></a>
-								on <?php echo date("F d, Y", strtotime($post->created_at)); ?>
+								<a><?php echo $post['author']; ?></a>
+								on <?php echo date("F d, Y", strtotime($post['created_at'])); ?>
 							</p>
 						</div>
 					<?php endforeach; ?>

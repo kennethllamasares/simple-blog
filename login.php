@@ -6,7 +6,29 @@
     	Redirect::to('index.php');
     }
 
-    $page_title = "Simple Blog - Sign In"
+    $page_title = "Simple Blog - Sign In";
+
+    if(Input::exist()) {
+    	$validate = new Validate();
+        $validation = $validate->check($_POST, array(
+            'email' => array('required' => true),
+            'password' => array('required' => true)
+        ));
+
+        if($validation->passed()) {
+            $user = new User();
+            $login = $user->login(Input::get('email'), Input::get('password'));
+
+            if($login) {
+                Redirect::to('index.php');
+            } else {
+            	$errors = ['Login failed.'];
+            }
+
+        } else {
+        	$errors = $validation->errors();
+        }
+    }
 ?>
 
 <!DOCTYPE html>
@@ -39,50 +61,22 @@
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-md-10 mx-auto">
+				<?php if(isset($errors)): ?>
+                	<div class="bg-danger validation-errors">
+                		<ul>
+                			<?php foreach($errors as $error): ?>
+                				<li><?php echo $error; ?></li>
+                			<?php endforeach; ?>
+                		</ul>
+                	</div>
+                <?php endif; ?>
 				<form method="post"  role="form" action="" novalidate autocomplete="off">
 
-					<?php if(Session::exists('home')) { ?>
+					<?php if(Session::exists('home')): ?>
 						<div class="alert alert-success" role="alert">
 							<?php echo '<p>' . Session::flash('home') . '</p>' ; ?>
 						</div>
-					<?php } ?>
-
-					<?php 
-						if(Input::exist()) {
-					    	$validate = new validate();
-				            $validation = $validate->check($_POST, array(
-				                'email' => array('required' => true),
-				                'password' => array('required' => true)
-				            ));
-
-				            if($validation->passed()) {
-				                $user = new User();
-				                $login = $user->login(Input::get('email'), Input::get('password'));
-
-				                if($login) {
-				                    Redirect::to('index.php');
-				                } else {
-				                    //failed
-				                    echo '<div class="bg-danger validation-errors">';
-							        echo '<p>The following errors are encountered</p>';
-							        echo '<ul>';
-				                    echo '<li> Login In failed </li>';
-				                    echo '</ul>';
-									echo '</div>';
-				                }
-
-				            } else {
-				            	echo '<div class="bg-danger validation-errors">';
-						        echo '<p>The following errors are encountered</p>';
-						        echo '<ul>';
-					            	foreach($validation->errors() as $error) {
-					                    echo '<li>', $error, '</li>';
-					                }
-				                echo '</ul>';
-								echo '</div>';
-				            }
-					    }
-					?>
+					<?php endif; ?>
 					 
 					 <div class="form-group">
 					 	<label for="exampleInputEmail1">Email address</label>

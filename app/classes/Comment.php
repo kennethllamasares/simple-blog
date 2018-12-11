@@ -4,35 +4,22 @@
 				$_data;
 
 		public function __construct($user = null) {
-			$this->_db = DB::getInstance();
+			$this->_db = new Database();
 		}
 
 		public function create($fields = array()) {
-			if(!$this->_db->insert('comments', $fields)) {
+
+			$keys = array_keys($fields);
+			$values = [];
+
+			foreach ($fields as $field => $value) {
+				array_push($values, ":{$field}");
+			}
+
+			$sql = "INSERT INTO comments (" . implode(', ', $keys) . ") VALUES (" . implode(', ', $values) . ")";
+
+			if(!$this->_db->query($sql, $fields)) {
 				throw new Exception('Something went wrong. Unable to create comment.');
-			}
-		}
-
-		public function find($id) {
-			if($id) {
-				$data = $this->_db->get('comments', array('id', '=', $id));
-				if($data->count()) {
-					$this->_data = $data->first();
-					return true;
-				}
-			}
-			return false;
-		}
-
-		public function update($id, $fields) {
-			if(!$this->_db->update('comments', $id, $fields)) {
-				throw new Exception('Something went wrong. Unable to update comment.');
-			}
-		}
-
-		public function delete($where) {
-			if(!$this->_db->delete('comments', $where)) {
-				throw new Exception('Something went wrong. Unable to delete comment.');
 			}
 		}
 

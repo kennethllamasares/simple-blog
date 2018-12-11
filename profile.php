@@ -10,7 +10,7 @@
     }
 
     if(Input::exist() && $user->isLoggedIn()) {
-    	$validate = new validate();
+    	$validate = new Validate();
         $validation = $validate->check($_POST, array(
             'name' => array(
 	            'required' => true
@@ -18,7 +18,7 @@
 	        'email' => array(
 	            'required' => true,
 	            'valid' => true,
-	            'unique:except' => 'users,' . $user->data()->id
+	            'unique:except' => 'users,' . $user->data()['id']
 	        ),
         ));
 
@@ -27,7 +27,7 @@
 
 	        try {
 
-	            $u->update($user->data()->id, array(
+	            $u->update($user->data()['id'], array(
 	                'name' => Input::get('name'),
 	                'email' => Input::get('email')
 	            ));
@@ -89,10 +89,10 @@
 				<?php endif; ?>
 				<form id="createPostForm" method="POST" action="" novalidate autocomplete="off">
 					<div class="form-group">
-						<input type="text" name="name" class="form-control" placeholder="Name" id="name" value="<?php echo $user->data()->name; ?>">
+						<input type="text" name="name" class="form-control" placeholder="Name" id="name" value="<?php echo $user->data()['name']; ?>">
 					</div>
 					<div class="form-group">
-						<input type="text" name="email" class="form-control" placeholder="Email Address" id="title" value="<?php echo $user->data()->email; ?>">
+						<input type="text" name="email" class="form-control" placeholder="Email Address" id="title" value="<?php echo $user->data()['email']; ?>">
 					</div>
 		            <br/>
 		            <div class="form-group">

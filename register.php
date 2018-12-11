@@ -6,17 +6,56 @@
     	Redirect::to('index.php');
     }
 
-    $page_title = "Simple Blog - Become a member"
+    $page_title = "Simple Blog - Become a member";
+
+    if(Input::exist()) {
+		$validate = new Validate();
+	    $validation = $validate->check($_POST, array(
+	        'name' => array(
+	            'required' => true
+	        ),
+	        'email' => array(
+	            'required' => true,
+	            'valid' => true,
+	            'unique' => 'users'
+	        ),
+	        'password' => array(
+	            'required' => true
+	        ),
+	        'password_confirmation' => array(
+	            'required' => true,
+	            'matches' => 'password'
+	        )
+	    ));
+
+	    if($validation->passed()) {
+	        //echo 'passed';
+	        $u = new User();
+
+	        try {
+
+	            $u->create(array(
+	                'name' => Input::get('name'),
+	                'email' => Input::get('email'),
+	                'password' => md5(Input::get('password'))
+	            ));
+
+	            Session::flash('home', 'You have been registered and can now log in!');
+	            
+	            Redirect::to('login.php');
+	        } catch (Exception $e) {
+	            die($e->getMessage());
+	        }
+	    } else {
+	    	$errors = $validation->errors();
+	    }
+	}
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 	<head>
-
 		<?php include('./partials/head.php'); ?>
-
 	</head>
-
   <body>
 
     <?php include('./partials/nav.php'); ?>
@@ -38,63 +77,16 @@
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-md-10 mx-auto">
+				<?php if(isset($errors)): ?>
+                	<div class="bg-danger validation-errors">
+                		<ul>
+                			<?php foreach($errors as $error): ?>
+                				<li><?php echo $error; ?></li>
+                			<?php endforeach; ?>
+                		</ul>
+                	</div>
+                <?php endif; ?>
 				<form method="post" role="form" action="" autocomplete="off">
-					<?php
-						if(Input::exist()) {
-							$validate = new validate();
-						    $validation = $validate->check($_POST, array(
-						        'name' => array(
-						            'required' => true
-						        ),
-						        'email' => array(
-						            'required' => true,
-						            'valid' => true,
-						            'unique' => 'users'
-						        ),
-						        'password' => array(
-						            'required' => true
-						        ),
-						        'password_confirmation' => array(
-						            'required' => true,
-						            'matches' => 'password'
-						        )
-						    ));
-
-						    if($validation->passed()) {
-						        //echo 'passed';
-						        $user = new User();
-
-						        try {
-
-						            $user->create(array(
-						                'name' => input::get('name'),
-						                'email' => input::get('email'),
-						                'password' => md5(input::get('password'))
-						            ));
-
-						            Session::flash('home', 'You have been registered and can now log in!');
-						            
-						            Redirect::to('login.php');
-						        } catch (Exception $e) {
-						            die($e->getMessage());
-						        }
-						    } else {
-						        //print_r($validation->errors());
-						        echo '<div class="bg-danger validation-errors">';
-						        echo '<p>The following errors are encountered</p>';
-						        echo '<ul>';
-
-						        foreach($validation->errors() as $error) {
-						            echo '<li>', $error, '</li>';
-						        }
-
-						        echo '</ul>';
-						        echo '</div>';
-						    }
-						}
-						
-					?>
-
 					<div class="form-group">
 						<label for="yourName">Name<span class="required">*</span>:</label>
 						<input type="text" name="name" class="form-control" id="yourName" value="<?php echo escape(Input::get('name')); ?>" placeholder="Enter your Name" maxlength="50" >
@@ -113,7 +105,6 @@
 					</div>
 	                 
 	                <button type="submit" class="btn btn-primary">Sign Up</button>
-
 	                </br>
 				</form>
 			</div>
@@ -121,20 +112,6 @@
 	</div>
 
     <?php include('./partials/footer.php'); ?>
-
     <?php include('./partials/scripts.php'); ?>
-    <script>
-    	$(function (){
-    		$('#content').show();
-    		$('#content').summernote({
-				height: 300,
-				popover: {
-					image: [],
-					link: [],
-					air: []
-				}
-			});
-    	});
-    </script>
 	</body>
 </html>

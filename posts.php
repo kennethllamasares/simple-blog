@@ -3,9 +3,11 @@
 
 	$user = new User();
 
+	$db = new Database();
+
     $page_title = 'Simple Blog - My Posts';
 
-    $posts = DB::getInstance()->query("SELECT posts.id, posts.title, posts.content, posts.created_at, posts.updated_at, users.name as author FROM posts LEFT JOIN users ON posts.user_id=users.id WHERE posts.user_id = ?", [$user->data()->id]);
+    $posts = $db->query("SELECT posts.id, posts.title, posts.content, posts.created_at, posts.updated_at, users.name as author FROM posts LEFT JOIN users ON posts.user_id=users.id WHERE posts.user_id = :id", ['id' => $user->data()['id']]);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -57,19 +59,19 @@
 							</tr>
 						</thead>
 						<tbody>
-							<?php if(!$posts->count()): ?>
+							<?php if(!$posts): ?>
 								<tr>
 									<td colspan="4">No posts available.</td>
 								</tr>
 							<?php else: ?>
-								<?php foreach($posts->results() as $post): ?>
+								<?php foreach($posts as $post): ?>
 									<tr>
-										<td><a href="post.php?title=<?php echo str_slug($post->title); ?>"><?php echo $post->title?></a></td>
-										<td><?php echo dateDiff($post->created_at, date("Y-m-d H:i:s"));?></td>
-										<td><?php echo $post->updated_at ? dateDiff($post->updated_at, date("Y-m-d H:i:s")) : '-';?></td>
+										<td><a href="post.php?title=<?php echo str_slug($post->title); ?>"><?php echo $post['title']?></a></td>
+										<td><?php echo dateDiff($post['created_at'], date("Y-m-d H:i:s"));?></td>
+										<td><?php echo $post['updated_at'] ? dateDiff($post['updated_at'], date("Y-m-d H:i:s")) : '-';?></td>
 										<td>
-											<a href="edit-post.php?id=<?php echo $post->id; ?>">Edit</a>
-											<a class="delete-post" href="javascript:void(0);" data-id="<?php echo $post->id; ?>">Delete</a>
+											<a href="edit-post.php?id=<?php echo $post['id']; ?>">Edit</a>
+											<a class="delete-post" href="javascript:void(0);" data-id="<?php echo $post['id']; ?>">Delete</a>
 										</td>
 									</tr>
 								<?php endforeach; ?>
@@ -77,7 +79,6 @@
 						</tbody>
 					</table>
 				</div>
-				
 				<hr>
 			</div>
 		</div>

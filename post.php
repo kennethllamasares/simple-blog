@@ -3,32 +3,30 @@
 
 	$user = new User();
 
-	$search = null;
+	$db = new Database();
 
    	if(isset($_GET['title'])) {
    		$title = str_slug($_GET['title'], ' ');
 
-   		$search = DB::getInstance()->query("SELECT posts.id, posts.title, posts.content, posts.created_at, users.name as author FROM posts LEFT JOIN users ON posts.user_id=users.id WHERE posts.title = ?", [$title]);
+   		$post = $db->row("SELECT posts.id, posts.title, posts.content, posts.created_at, users.name as author FROM posts LEFT JOIN users ON posts.user_id=users.id WHERE posts.title = :title", ['title' => $title]);
    	} elseif (isset($_GET['id'])) {
    		$id = $_GET['id'];
 
-   		$search = DB::getInstance()->query("SELECT posts.id, posts.title, posts.content, posts.created_at, users.name as author FROM posts LEFT JOIN users ON posts.user_id=users.id WHERE posts.id = ?", [$id]);
+   		$post = $db->row("SELECT posts.id, posts.title, posts.content, posts.created_at, users.name as author FROM posts LEFT JOIN users ON posts.user_id=users.id WHERE posts.id = :id", ['id' => $id]);
    	} else {
    		Redirect::to('index.php');
    	}
 
-   	if(!$search || !$search->count()) {
+   	if(!$post) {
    		Redirect::to('index.php');
    	}
 
-   	$post = $search->first();
+   	$page_title = 'Simple Blog | ' . $post['title'];
 
-   	$page_title = 'Simple Blog | ' . $post->title;
+   	$comments = $db->query("SELECT comments.id, comments.content, comments.created_at, users.name as author FROM comments LEFT JOIN users ON comments.user_id=users.id WHERE comments.post_id = :id ", ['id' => $post['id']]);
 
-   	$comments = DB::getInstance()->query("SELECT comments.id, comments.content, comments.created_at, users.name as author FROM comments LEFT JOIN users ON comments.user_id=users.id WHERE comments.post_id = ? ", [$post->id]);
-
-   	if(Input::exist() && $user->isLoggedIn()) {
-    	$validate = new validate();
+   	if(!empty($_POST)) {
+    	$validate = new Validate();
         $validation = $validate->check($_POST, array(
             'comment' => array('required' => true)
         ));
@@ -37,17 +35,16 @@
             $comment = new Comment();
 
 	        try {
-
 	            $comment->create(array(
 	                'content' => Input::get('comment'),
-	                'post_id' => $post->id,
-	                'user_id' => $user->data()->id,
+	                'post_id' => $post['id'],
+	                'user_id' => $user->data()['id'],
 	                'created_at' => date("Y-m-d H:i:s")
 	            ));
 
 	            // Session::flash('home', 'You have been registered and can now log in!');
 	            
-	            Redirect::to('post.php?title=' . str_slug($post->title, '-'));
+	            Redirect::to('post.php?title=' . str_slug($post['title'], '-'));
 	        } catch (Exception $e) {
 	            die($e->getMessage());
 	        }
@@ -81,8 +78,8 @@
 			<div class="row">
 				<div class="col-lg-8 col-md-10 mx-auto">
 					<div class="site-heading">
-						<h1><?php echo $post->title; ?></h1>
-						<span class="subheading">Posted by <?php echo $post->author; ?> on <?php echo date("F d, Y", strtotime($post->created_at)); ?></span>
+						<h1><?php echo $post['title']; ?></h1>
+						<span class="subheading">Posted by <?php echo $post['author']; ?> on <?php echo date("F d, Y", strtotime($post['created_at'])); ?></span>
 					</div>
 				</div>
 			</div>
@@ -94,7 +91,7 @@
 		<div class="container">
 			<div class="row">
 				<div class="col-lg-8 col-md-10 mx-auto">
-					<?php echo $post->content; ?>
+					<?php echo $post['content']; ?>
 				</div>
 			</div>
 
@@ -130,18 +127,18 @@
 			                    <div class="clearfix"></div>
 			                    <hr>
 
-			                    <?php if(!$comments->count()): ?>
+			                    <?php if(!$comments): ?>
 									<p class="text-center">No comments available.</p>
 								<?php else: ?>
 									<ul class="media-list">
-										<?php foreach($comments->results() as $comment): ?>
+										<?php foreach($comments as $comment): ?>
 											<li class="media">
 					                            <div class="media-body">
 					                                <span class="text-muted float-right">
-					                                    <small class="text-muted"><?php echo dateDiff($comment->created_at, date("Y-m-d H:i:s")); ?></small>
+					                                    <small class="text-muted"><?php echo dateDiff($comment['created_at'], date("Y-m-d H:i:s")); ?></small>
 					                                </span>
-					                                <strong class="text-success"><?php echo $comment->author; ?></strong>
-					                                <p><?php echo $comment->content; ?></p>
+					                                <strong class="text-success"><?php echo $comment['author']; ?></strong>
+					                                <p><?php echo $comment['content']; ?></p>
 					                            </div>
 					                        </li>
 										<?php endforeach; ?>

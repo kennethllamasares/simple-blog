@@ -5,7 +5,7 @@
 				$_db = null;
 
 		public function __construct() {
-			$this->_db = DB::getInstance();
+			$this->_db = new Database();
 		}
 
 		public function check($source, $items = array()) {
@@ -24,8 +24,9 @@
 								break;
 
 							case 'unique':
-								$check = $this->_db->get($rule_value, array('email', '=', $value));
-								if($check->count()) {
+								// $check = $this->_db->get($rule_value, array('email', '=', $value));
+								$check = $this->_db->row("SELECT * FROM {$rule_value} WHERE email=:email", array('email' => $value));
+								if($check) {
 									$this->addError("{$item} already exists.");
 								}
 								break;
@@ -33,10 +34,8 @@
 							case 'unique:except':
 								$params = explode(',', $rule_value);
 
-								// echo $params[1];
-								// $check = $this->_db->get($params[0], array('email', '=', $value));
-								$check = $this->_db->query("SELECT * FROM ". $params[0] . " WHERE email = ? AND id <> ?", [$value, $params[1]]);
-								if($check->count()) {
+								$check = $this->_db->row("SELECT * FROM {$params[0]} WHERE email = :email AND id <> :id", ['email' => $value, 'id' => $params[1]]);
+								if($check) {
 									$this->addError("{$item} already exists.");
 								}
 								break;

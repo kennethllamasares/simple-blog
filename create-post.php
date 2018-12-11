@@ -10,7 +10,7 @@
     }
 
     if(Input::exist() && $user->isLoggedIn()) {
-    	$validate = new validate();
+    	$validate = new Validate();
         $validation = $validate->check($_POST, array(
             'title' => array('required' => true),
             'content' => array('required' => true)
@@ -24,7 +24,7 @@
 	            $post->create(array(
 	                'title' => Input::get('title'),
 	                'content' => Input::get('content'),
-	                'user_id' => $user->data()->id,
+	                'user_id' => $user->data()['id'],
 	                'created_at' => date("Y-m-d H:i:s")
 	            ));
 	            Session::flash('posts', 'Post successfully created.');

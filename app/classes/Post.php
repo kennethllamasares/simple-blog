@@ -4,12 +4,21 @@
 				$_data;
 
 		public function __construct($user = null) {
-			$this->_db = DB::getInstance();
+			$this->_db = new Database();
 		}
 
 		public function create($fields = array()) {
-			if(!$this->_db->insert('posts', $fields)) {
-				throw new Exception('Something went wrong. Unable to create post.');
+			$keys = array_keys($fields);
+			$values = [];
+
+			foreach ($fields as $field => $value) {
+				array_push($values, ":{$field}");
+			}
+
+			$sql = "INSERT INTO posts (" . implode(', ', $keys) . ") VALUES (" . implode(', ', $values) . ")";
+
+			if(!$this->_db->query($sql, $fields)) {
+				throw new Exception('Something went wrong. Unable to create a post.');
 			}
 		}
 
@@ -26,13 +35,26 @@
 		}
 
 		public function update($id, $fields) {
-			if(!$this->_db->update('posts', $id, $fields)) {
-				throw new Exception('Something went wrong. Unable to update post.');
+			$set = '';
+			$x = 1;
+
+			foreach ($fields as $field => $value) {
+				$set .= "{$field} = :{$field}";
+				if($x < count($fields)) {
+					$set .= ', ';
+				}
+				$x++;
 			}
+
+			$sql = "UPDATE posts SET {$set} WHERE id = :id";
+
+			$fields['id'] = $id;
+
+			$this->_db->query($sql, $fields);
 		}
 
-		public function delete($where) {
-			if(!$this->_db->delete('posts', $where)) {
+		public function delete($id) {
+			if(!$this->_db->query('DELETE FROM posts WHERE id=:id', ['id' => $id])) {
 				throw new Exception('Something went wrong. Unable to delete post.');
 			}
 		}
